@@ -28,8 +28,6 @@ services:
       - DATABASE=${DB_NAME:-test_db}
       - USERNAME=${DB_USER:-test_user}
       - PASSWORD=${DB_PASS:-test_pass}
-    ports:
-      - 3000:3000
     depends_on:
       app_db:
         condition: service_healthy
@@ -44,8 +42,6 @@ services:
       - DATABASE=${DB_NAME:-test_db}
       - USERNAME=${DB_USER:-test_user}
       - PASSWORD=${DB_PASS:-test_pass}
-    ports:
-      - 3100:3100
     depends_on:
       app_db:
         condition: service_healthy
@@ -60,8 +56,25 @@ services:
       - DATABASE=${DB_NAME:-test_db}
       - USERNAME=${DB_USER:-test_user}
       - PASSWORD=${DB_PASS:-test_pass}
-    ports:
-      - 3200:3200
     depends_on:
       app_db:
         condition: service_healthy
+
+  # the entry point container
+  proxy_front:
+    build:
+      context: ./proxy-front
+      dockerfile: Containerfile
+    restart: always
+    ports:
+      - 8000:80 # for all in all server
+      - 3000:3000 # for user app
+      - 4000:4000 # for orders app
+      - 5000:5000 # for products app
+    depends_on:
+      - app_user
+      - app_orders
+      - app_products
+
+volumes:
+  pgdata:
