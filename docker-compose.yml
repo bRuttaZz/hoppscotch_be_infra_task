@@ -1,0 +1,67 @@
+services:
+  app_db:
+    image: postgres:16-alpine
+    restart: always
+    environment:
+      - POSTGRES_DB=${DB_NAME:-test_db}
+      - POSTGRES_USER=${DB_USER:-test_user}
+      - POSTGRES_PASSWORD=${DB_PASS:-test_pass}
+    # volumes:
+    #   - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d ${DB_NAME:-test_db} -U ${DB_USER:-test_user}",
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 10
+
+  app_user:
+    build:
+      context: ./user
+      dockerfile: Containerfile
+    restart: always
+    environment:
+      - HOST=app_db
+      - DATABASE=${DB_NAME:-test_db}
+      - USERNAME=${DB_USER:-test_user}
+      - PASSWORD=${DB_PASS:-test_pass}
+    ports:
+      - 3000:3000
+    depends_on:
+      app_db:
+        condition: service_healthy
+
+  app_orders:
+    build:
+      context: ./orders
+      dockerfile: Containerfile
+    restart: always
+    environment:
+      - HOST=app_db
+      - DATABASE=${DB_NAME:-test_db}
+      - USERNAME=${DB_USER:-test_user}
+      - PASSWORD=${DB_PASS:-test_pass}
+    ports:
+      - 3100:3100
+    depends_on:
+      app_db:
+        condition: service_healthy
+
+  app_products:
+    build:
+      context: ./products
+      dockerfile: Containerfile
+    restart: always
+    environment:
+      - HOST=app_db
+      - DATABASE=${DB_NAME:-test_db}
+      - USERNAME=${DB_USER:-test_user}
+      - PASSWORD=${DB_PASS:-test_pass}
+    ports:
+      - 3200:3200
+    depends_on:
+      app_db:
+        condition: service_healthy
