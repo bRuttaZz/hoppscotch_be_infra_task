@@ -6,8 +6,8 @@ services:
       - POSTGRES_DB=${DB_NAME:-test_db}
       - POSTGRES_USER=${DB_USER:-test_user}
       - POSTGRES_PASSWORD=${DB_PASS:-test_pass}
-    # volumes:
-    #   - pgdata:/var/lib/postgresql/data
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     healthcheck:
       test:
         [
